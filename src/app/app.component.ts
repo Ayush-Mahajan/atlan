@@ -15,6 +15,20 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) { }
   title = 'atlan';
   objs: [];
+  ddata: {
+    batting_score: number,
+    wickets: any,
+    runs_conceded: any,
+    catches: number,
+    stumps: number,
+    opposition: any,
+    ground: any,
+    date: any,
+    match_result: any,
+    result_margin: any,
+    toss: any,
+    batting_innings: any,
+  }[];
   width: number;
   height: number;
   d1 = [];
@@ -33,7 +47,7 @@ export class AppComponent implements OnInit {
     });
 
     // tslint:disable-next-line: deprecation
-    $(window).scroll(function () {
+    $(window).scroll(function() {
       // tslint:disable-next-line: prefer-const
       let wScroll = $(this).scrollTop();
       if (wScroll >= 450 && wScroll <= 1000) {
@@ -48,8 +62,35 @@ export class AppComponent implements OnInit {
     // tslint:disable-next-line: prefer-const
 
     this.http.get('../assets/sachin1.csv', { responseType: 'text' }).subscribe(data => {
-      this.objs = d3.csvParse(data);
+      this.ddata = d3.csv(data) as unknown as [];
       this.render(this.objs);
+      const yScale = d3.scaleBand().domain(this.ddata.map(d => d.opposition)).range;
+      const a = this.ddata.map(d => +d.batting_score);
+      const xScale = d3.scaleLinear().domain([0, d3.max(a)]).range([0, this.width]);
+    // console.log(yScale.domain());
+    // console.log(xScale.domain());
+      this.l1 = [ ];
+      this.d1 = this.ddata.filter( d => {
+      return (d.batting_score > 0 && d.batting_score < 10 );
+    });
+      let x = this.d1.length;
+      this.l1.push(x);
+      let i = 1;
+      for ( i = 1 ; i <= 9 ; i++) {
+      console.log(i);
+      this.d1 = this.ddata.filter( d => {
+        return (d.batting_score >= (i * 10) && d.batting_score < ((i + 1) * 10 ));
+      });
+      x = this.d1.length;
+      this.l1.push(x) ;
+      console.log(this.l1);
+     }
+      this.d1 = this.ddata.filter( d => {
+      return d.batting_score >= 100;
+    });
+      x = this.d1.length;
+      this.l1.push(x) ;
+      console.log(this.l1);
     });
 
     const svg = d3.select('svg');
@@ -58,34 +99,8 @@ export class AppComponent implements OnInit {
     svg.style('background-color', 'red');
   }
 
-  render(data: [ ]) {
-    const yScale = d3.scaleBand().domain(data.map(d => d.opposition)).range;
-    const a = data.map(d => +d.batting_score);
-    const xScale = d3.scaleLinear().domain([0, d3.max(a)]).range([0, this.width]);
-    // console.log(yScale.domain());
-    // console.log(xScale.domain());
-    this.l1 = [ ];
-    this.d1 = data.filter( d => {
-      return (d.batting_score > 0 && d.batting_score < 10 )
-    });
-    let x = this.d1.length;
-    this.l1.push(x);
-    let i = 1;
-    for( i = 1 ; i <= 9 ; i++) {
-      console.log(i);
-      this.d1 = data.filter( d => {
-        return (d.batting_score >= (i * 10) && d.batting_score < ((i+1) *10 ))
-      })
-      x = this.d1.length;
-      this.l1.push(x) ;
-      console.log(this.l1);
-     }
-    this.d1 = data.filter( d => {
-      return d.batting_score >= 100;
-    })
-    x = this.d1.length;
-    this.l1.push(x) ;
-    console.log(this.l1);
+  render(dat) {
+
   }
 
 }
